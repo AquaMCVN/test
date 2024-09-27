@@ -327,6 +327,8 @@ public class LimboHub {
       NPC npc = new NPC(
           data.DISPLAY_NAME.isBlank() ? null : getSerializer().deserialize(data.DISPLAY_NAME), data.X, data.Y,
           data.Z, (float) data.YAW, (float) data.PITCH, data.LOAD_SKIN ? data.SKIN_DATA : null, data.ACTION, data.COOLDOWN
+          data.DISPLAY_NAME.isBlank() ? null : data.DISPLAY_NAME, data.X, data.Y,
+          data.Z, (float) data.YAW, (float) data.PITCH, data.LOAD_SKIN ? data.SKIN_DATA : null, data.ACTION, data.COOLDOWN, this.server
       );
 
       this.npcs.put(npc.getEntityId(), npc);
