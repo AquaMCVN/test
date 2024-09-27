@@ -8,11 +8,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package net.elytrium.limbohub.entities;
@@ -58,6 +58,7 @@ public class NPC {
   private final Settings.MAIN.NPC.SKIN_DATA skinData;
   private final Settings.MAIN.ACTION action;
   private final int cooldown;
+  //I think there should be better way to do this.
   private final ProxyServer server;
 
   public NPC(int entityId, UUID uuid, String username, String displayName, double positionX, double positionY, double positionZ,
@@ -108,7 +109,7 @@ public class NPC {
     } else {
       player.writePacketAndFlush(
           new LegacyPlayerListItemPacket(
-              LegacyPlayerListItemPacket.ADD_PLAYER,
+                  LegacyPlayerListItemPacket.ADD_PLAYER,
               List.of(
                   new LegacyPlayerListItemPacket.Item(this.uuid)
                       .setName(profile.getName())
@@ -137,12 +138,16 @@ public class NPC {
     if (this.displayName != null) {
       player.writePacketAndFlush(new SpawnEntity(this.entityId + 1, UUID.randomUUID(), ArmorStand::getEntityType,
           this.positionX, this.positionY - 0.175, this.positionZ, this.pitch, this.yaw, this.yaw, 0));
-      player.writePacketAndFlush(new SetEntityMetadata(this.entityId + 1, version -> ArmorStand.buildHologramMetadata(version, this.processPlaceholders(this.displayName))));
+      player.writePacketAndFlush(
+              new SetEntityMetadata(this.entityId + 1, version -> ArmorStand.buildHologramMetadata(version, this.processPlaceholders(this.displayName)))
+      );
     }
   }
 
   private Component processPlaceholders(String text) {
+    //We can make reflection-placeholders, but for now I think this would be enough
     Matcher matcher = ONLINE_SEARCH_PATTERN.matcher(text);
+
     StringBuilder result = new StringBuilder();
     int lastEnd = 0;
 
@@ -152,21 +157,24 @@ public class NPC {
       // Extract the text after the colon
       String extractedText = matcher.group(1);
 
-      // Getting server online
-      Optional<RegisteredServer> serverOptional = this.server.getServer(extractedText);
+      //Getting server online
+      Optional<RegisteredServer> serverOptional =  this.server.getServer(extractedText);
 
       if (serverOptional.isPresent()) {
         RegisteredServer server = serverOptional.get();
         int playerCount = server.getPlayersConnected().size();
+
         result.append(playerCount);
       } else {
-        result.append("SERVER_NOT_FOUND");
+        result.append("LIMBOHUBHUB:SERVER_NOT_FOUND");
       }
+
 
       lastEnd = matcher.end();
     }
 
     result.append(text.substring(lastEnd));
+
     return LimboHub.getSerializer().deserialize(result.toString());
   }
 
